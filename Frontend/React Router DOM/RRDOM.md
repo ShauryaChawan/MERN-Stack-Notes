@@ -42,7 +42,7 @@ This tutorial will be creating, reading, searching, updating, and deleting data.
 
 👉 Copy/Paste the tutorial data module [found here](https://gist.githubusercontent.com/ryanflorence/1e7f5d3344c0db4a8394292c157cd305/raw/f7ff21e9ae7ffd55bfaaaf320e09c6a08a8a6611/contacts.js) into `src/contacts.js`
 
-All you need in the src folder are `contacts.js, main.jsx, App.jsx` and `index.css`. You can delete anything else (like `assets`, etc.).
+All you need in the src folder are `contacts.js, main.jsx` and `index.css`. You can delete anything else (like `assets`, etc.).
 
 👉 Delete unused files in `src/` so all you have left are these:
 
@@ -50,7 +50,6 @@ All you need in the src folder are `contacts.js, main.jsx, App.jsx` and `index.c
 src
 ├── contacts.js
 ├── index.css
-├── App.jsx
 └── main.jsx
 ```
 If your app is running, it might blow up momentarily, just keep going 😋. And with that, we're ready to get started!
@@ -61,22 +60,20 @@ If your app is running, it might blow up momentarily, just keep going 😋. And 
 
 First thing to do is create a [Browser Router](https://reactrouter.com/en/main/routers/create-browser-router) and configure our first route. This will enable client side routing for our web app.
 
-The `App.jsx` file is the entry point. Open it up and we'll put React Router on the page.
+The `main.jsx` file is the entry point. Open it up and we'll put React Router on the page.
 
-👉 Create and render a [browser router](https://reactrouter.com/en/main/routers/create-browser-router) in `App.jsx`
-> File: `App.jsx`
+👉 Create and render a [browser router](https://reactrouter.com/en/main/routers/create-browser-router) in `main.jsx`
+> File: `main.jsx`
 
 ```sh
-import React from 'react'
-import "./index.css";
-
-# importing the react-router-dom libraries
+import React from "react";
+import ReactDOM from "react-dom/client";
 import {
   createBrowserRouter,
   RouterProvider,
-} from "react-router-dom";`
+} from "react-router-dom";
+import "./index.css";
 
-# crearting a router
 const router = createBrowserRouter([
   {
     path: "/",
@@ -84,15 +81,11 @@ const router = createBrowserRouter([
   },
 ]);
 
-const App = () => {
-  return (
-    <div>
-      <RouterProvider router={router} />
-    </div>
-  )
-}
-
-export default App;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
+);
 ```
 This first route is what we often call the "root route" since the rest of our routes will render inside of it. It will serve as the root layout of the UI, we'll have nested layouts as we get farther along.
 
@@ -158,7 +151,7 @@ export default function Root() {
 ```
 Nothing React Router specific yet, so feel free to copy/paste all of that.
 
-👉 Set `<Root>` as the root route's [`element`](https://reactrouter.com/en/main/route/route#element) in `App.jsx`
+👉 Set `<Root>` as the root route's [`element`](https://reactrouter.com/en/main/route/route#element) in `main.jsx`
 
 ```sh
 # /* existing imports */
@@ -214,9 +207,9 @@ export default function ErrorPage() {
 ```
 👉 Set the `<ErrorPage>` as the [`errorElement`](https://reactrouter.com/en/main/route/error-element) on the root route
 
-> File: `src/App.jsx`
+> File: `src/main.jsx`
 ```sh
-# /* previous imports */
+/* previous imports */
 import ErrorPage from "./error-page";
 
 const router = createBrowserRouter([
@@ -227,15 +220,11 @@ const router = createBrowserRouter([
   },
 ]);
 
-const App = () => {
-  return (
-    <div>
-      <RouterProvider router={router} />
-    </div>
-  )
-}
-
-export default App;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
+);
 ```
 
 The error page should now look like this:
@@ -354,7 +343,7 @@ function Favorite({ contact }) {
 
 Now that we've got a component, let's hook it up to a new route.
 
-👉 Import the `contact` component and create a new route in `App.jsx`
+👉 Import the `contact` component and create a new route in `main.jsx`
 ```sh
 # /* existing imports */
 import Contact from "./routes/contact";
@@ -393,7 +382,7 @@ We do it by making the contact route a _child_ of the root route.
 
 👉 Move the contacts route to be a _child_ of the root route
 
-> File: `App.jsx`
+> File: `main.jsx`
 
 ```sh
 const router = createBrowserRouter([
@@ -488,4 +477,65 @@ After clikcing on the "Your Name" button or going on "`contacts/1`" link, we get
 
 ![img](network%20tab%20img%203.png)
 
+<hr/>
+
+## **Loading Data**
+
+In web development, when you want to display a web page, you need to consider three important things: the part of the web address that identifies what content to show (URL segment), the way the content should look (layout), and the information that should be displayed on the web page (data). These three things are closely connected and usually need to work together. It's important to plan how they will work together to make sure that the web page looks and works the way it's supposed to.
+
+We can see it in this app already:
+
+| URL Segment | Components | Data |
+| ------ | ------ | ------ |
+| `/` | `<Root>` | lits of contacts |
+| `contacts/:id` | `<Contact>` | individual contact |
+
+Because of this natural coupling, React Router has data conventions to get data into your route components easily.
+
+There are two APIs we'll be using to load data, [`loader`](https://reactrouter.com/en/main/route/loader) and [`useLoaderData`](https://reactrouter.com/en/main/hooks/use-loader-data). First we'll create and export a loader function in the root module, then we'll hook it up to the route. Finally, we'll access and render the data.
+
+👉 Export a loader from `root.jsx`
+
+> File : `src/routes/root.jsx`
+
+```sh
+import { Outlet, Link } from "react-router-dom";
+import { getContacts } from "../contacts";
+
+export async function loader() {
+  const contacts = await getContacts();
+  return { contacts };
+}
+```
+
+👉 Configure the loader on the route
+> File : `src/main.jsx`
+
+```sh
+/* other imports */
+import Root, { loader as rootLoader } from "./routes/root";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    errorElement: <ErrorPage />,
+    loader: rootLoader,
+    children: [
+    echo "<span style='background-color: yellow;'>Hello World!</span>"
+      {
+        path: "contacts/:contactId",
+        element: <Contact />,
+      },
+    ],
+  },
+]);
+```
+
+👉 Access and render the data
+> File : `src/routes/root.jsx`
+
+```sh
+
+```
 <hr/>
