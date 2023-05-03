@@ -1,5 +1,13 @@
 # **React Router DOM**
 
+## **Table of content**
+
+- [Tutorial](#tutorial)
+- [Setup](#setup)
+
+
+<hr/>
+
 ## **Tutorial**
 
 Welcome to the tutorial! We'll be building a small, but feature-rich app that lets you keep track of your contacts. We expect it to take between 30-60m if you're following along.
@@ -498,6 +506,19 @@ There are two APIs we'll be using to load data, [`loader`](https://reactrouter.c
 
 > File : `src/routes/root.jsx`
 
+<pre>
+import { Outlet, Link } from "react-router-dom";
+<span style="background-color: rgb(54,82,55);">
+import { getContacts } from "../contacts";
+</span>
+<span style="background-color: rgb(1, 75, 1);">
+export async function loader() {
+  const contacts = await getContacts();
+  return { contacts };
+}
+</span>
+</pre>
+
 ```sh
 import { Outlet, Link } from "react-router-dom";
 import { getContacts } from "../contacts";
@@ -522,7 +543,6 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     loader: rootLoader,
     children: [
-    echo "<span style='background-color: yellow;'>Hello World!</span>"
       {
         path: "contacts/:contactId",
         element: <Contact />,
@@ -531,6 +551,7 @@ const router = createBrowserRouter([
   },
 ]);
 ```
+
 
 👉 Access and render the data
 > File : `src/routes/root.jsx`
